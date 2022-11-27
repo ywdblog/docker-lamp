@@ -1,0 +1,89 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - C:\\Users\\ywdblog\\Desktop\\xwj\\lamp:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      #- ./nginx/cert:/etc/nginx/certs
+    ports:
+      - "9001:9001"
+      - "80:80"
+    links:
+      - php
+    depends_on:
+      - php
+    restart: always
+    container_name: nginx
+    networks:
+      - xwjn
+      - xwjne
+  php:
+    build:
+      context: ./php
+    volumes:
+      - C:\\Users\\ywdblog\\Desktop\\xwj\\lamp:/usr/share/nginx/html
+    #volumes:
+    #- ./php/php.ini:/usr/local/php/etc/php.ini
+    #- ./php/php-fpm.conf:/usr/local/php/etc/php-fpm.conf
+    #- ./php/php-fpm.d:/usr/local/php/etc/php-fpm.d
+    ports:
+      - "9000:9000"
+    restart: always
+    environment:
+      - DOCKER_ENV
+      - DOCKER_REDIS_PORT
+      - DOCKER_REDIS_IP
+      - DOCKER_MYSQL_HOST
+      - DOCKER_MYSQL_PORT
+      - DOCKER_MYSQL_USER
+      - DOCKER_MYSQL_PWD
+      - DOCKER_MYSQL_DB
+    container_name: php
+    networks:
+      - xwjn
+      - xwjne
+  mysql:
+    image: mysql:5.7.31
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    depends_on:
+      - php
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d/
+    environment:
+      MYSQL_ROOT_PASSWORD: 
+      #MYSQL_DATABASE:  
+      #MYSQL_USER: 
+      #MYSQL_PASSWORD: 
+    container_name: mysql
+    networks:
+      - xwjn
+  redis:
+    #build: ./redis
+    restart: always
+    ports:
+      - "6379"
+    sysctls:
+      - net.core.somaxconn=1024
+    environment:
+      - DOCKER_REDIS_IP
+    image: redis:5.0.9-alpine
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf:/etc/redis.conf
+    #- ./redis/sysctl.conf:/etc/sysctl.conf
+    command: [ "redis-server", "/etc/redis.conf" ]
+    container_name: redis
+    networks:
+      - xwjn
+  
+networks:
+  xwjn:
+    # name: xwjnb
+    driver: bridge
+    internal: true
+  xwjne:
+    driver: bridge
