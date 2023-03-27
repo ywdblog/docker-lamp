@@ -1,0 +1,9 @@
+./logs/*
+./mysql/data/*
+./mysql/data/mysql/*
+./mysql/data/liulianp/*
+./mysql/data/performance_schema/*
+./mysql/data/sys/*
+./redis/*
+./redis/data/*
+./nginx/cert/*
